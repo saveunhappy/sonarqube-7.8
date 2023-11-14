@@ -1,0 +1,26 @@
+{
+  "branches": [
+    {
+      "name": "feature/foo",
+      "isMain": false,
+      "type": "SHORT",
+      "mergeBranch": "master",
+      "status": {
+        "qualityGateStatus": "OK",
+        "bugs": 1,
+        "vulnerabilities": 0,
+        "codeSmells": 0
+      },
+      "analysisDate": "2017-04-03T13:37:00+0100"
+    },
+    {
+      "name": "master",
+      "isMain": true,
+      "type": "LONG",
+      "status": {
+        "qualityGateStatus": "ERROR"
+      },
+      "analysisDate": "2017-04-01T01:15:42+0100"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render checked 1`] = `
+<Tooltip
+  overlay="homepage.current"
+>
+  <span
+    className="display-inline-block"
+  >
+    <HomeIcon
+      filled={true}
+    />
+  </span>
+</Tooltip>
+`;
+
+exports[`should render unchecked 1`] = `
+<Tooltip
+  overlay="homepage.check"
+>
+  <a
+    className="link-no-underline display-inline-block"
+    href="#"
+    onClick={[Function]}
+  >
+    <HomeIcon
+      filled={false}
+    />
+  </a>
+</Tooltip>
+`;

@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitAny": true,
+    "strict": true,
+    "strictFunctionTypes": false,
+    "target": "es5",
+    "jsx": "react",
+    "lib": ["es2017", "dom"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "paths": {
+      "@sqapi/*": ["../sonar-web/src/main/js/api/*"],
+      "@sqcomponents/*": ["../sonar-web/src/main/js/components/*"],
+      "@sqhelpers/*": ["../sonar-web/src/main/js/helpers/*"],
+      "*": ["./node_modules/@types/*", "../sonar-web/node_modules/@types/*", "*"]
+    },
+    "sourceMap": true
+  },
+  "include": ["./src/main/js/**/*", "../sonar-web/src/main/js/app/types.d.ts"]
+}

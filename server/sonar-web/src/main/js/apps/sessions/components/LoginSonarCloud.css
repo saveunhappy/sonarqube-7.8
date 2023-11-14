@@ -1,0 +1,63 @@
+/*
+ * SonarQube
+ * Copyright (C) 2009-2019 SonarSource SA
+ * mailto:info AT sonarsource DOT com
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+.sonarcloud-login-alert {
+  margin: 10vh auto 5vh auto;
+  width: 256px;
+}
+
+.sonarcloud-login-page {
+  margin-top: 15vh;
+  width: 216px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: calc(4 * var(--gridSize)) 20px;
+}
+
+.sonarcloud-login-alert ~ .sonarcloud-login-page {
+  margin-top: 0;
+}
+
+.sonarcloud-login-page-large {
+  width: 300px;
+}
+
+.sonarcloud-login-title {
+  line-height: 1.5;
+  font-size: var(--bigFontSize);
+  font-weight: 300;
+  width: 135px;
+  margin: var(--gridSize) auto calc(3 * var(--gridSize));
+}
+
+.sonarcloud-oauth-providers.oauth-providers > ul {
+  width: 186px;
+}
+
+.sonarcloud-oauth-providers.oauth-providers > ul > li {
+  margin-bottom: var(--gridSize);
+}
+
+.sonarcloud-oauth-providers.oauth-providers .oauth-providers-help {
+  right: -22px;
+}
+
+.sonarcloud-login-cancel {
+  text-align: center;
+}

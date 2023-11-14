@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render 1`] = `
+<ListStyleFacet
+  facetHeader="issues.facet.assignees"
+  fetching={false}
+  getFacetItemText={[Function]}
+  getSearchResultKey={[Function]}
+  getSearchResultText={[Function]}
+  getSortedItems={[Function]}
+  loadSearchResultCount={[Function]}
+  maxInitialItems={15}
+  maxItems={100}
+  minSearchLength={2}
+  onChange={[MockFunction]}
+  onClear={[Function]}
+  onItemClick={[Function]}
+  onSearch={[Function]}
+  onToggle={[MockFunction]}
+  open={true}
+  property="assignees"
+  query={Object {}}
+  renderFacetItem={[Function]}
+  renderSearchResult={[Function]}
+  searchPlaceholder="search.search_for_users"
+  stats={
+    Object {
+      "": 5,
+      "bar": 7,
+      "baz": 6,
+      "foo": 13,
+    }
+  }
+  values={
+    Array [
+      "foo",
+    ]
+  }
+/>
+`;

@@ -1,0 +1,6 @@
+{
+  "extends": "sonarqube",
+  "rules": {
+    "camelcase": "off"
+  }
+}

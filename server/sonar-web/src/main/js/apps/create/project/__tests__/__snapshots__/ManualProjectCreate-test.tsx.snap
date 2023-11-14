@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render correctly 1`] = `
+<div
+  className="create-project"
+>
+  <div
+    className="flex-1 huge-spacer-right"
+  >
+    <form
+      className="manual-project-create"
+      onSubmit={[Function]}
+    >
+      <withRouter(OrganizationInput)
+        onChange={[Function]}
+        organization=""
+        organizations={
+          Array [
+            Object {
+              "key": "foo",
+              "name": "Foo",
+            },
+            Object {
+              "key": "bar",
+              "name": "Bar",
+              "subscription": "PAID",
+            },
+          ]
+        }
+      />
+      <ProjectKeyInput
+        className="form-field"
+        onChange={[Function]}
+        value=""
+      />
+      <div
+        className="form-field"
+      >
+        <label
+          htmlFor="project-name"
+        >
+          <span
+            className="text-middle"
+          >
+            <strong>
+              onboarding.create_project.display_name
+            </strong>
+            <em
+              className="mandatory"
+            >
+              *
+            </em>
+          </span>
+          <HelpTooltip
+            className="spacer-left"
+            overlay="onboarding.create_project.display_name.help"
+          />
+        </label>
+        <div
+          className="little-spacer-top spacer-bottom"
+        >
+          <input
+            className="input-super-large"
+            id="project-name"
+            maxLength={255}
+            minLength={1}
+            onChange={[Function]}
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          className="note abs-width-400"
+        >
+          onboarding.create_project.display_name.description
+        </div>
+      </div>
+      <SubmitButton
+        disabled={true}
+      >
+        set_up
+      </SubmitButton>
+      <DeferredSpinner
+        className="spacer-left"
+        loading={false}
+        timeout={100}
+      />
+    </form>
+  </div>
+</div>
+`;

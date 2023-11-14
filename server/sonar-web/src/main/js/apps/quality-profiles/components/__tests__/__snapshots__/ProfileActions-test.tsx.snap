@@ -1,0 +1,151 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders with all permissions 1`] = `
+<Fragment>
+  <ActionsDropdown>
+    <ActionsDropdownItem
+      id="quality-profile-activate-more-rules"
+      to={
+        Object {
+          "pathname": "/organizations/org/rules",
+          "query": Object {
+            "activation": "false",
+            "qprofile": "key",
+          },
+        }
+      }
+    >
+      quality_profiles.activate_more_rules
+    </ActionsDropdownItem>
+    <ActionsDropdownItem
+      download="key.xml"
+      id="quality-profile-backup"
+      to="/api/qualityprofiles/backup?profileKey=key"
+    >
+      backup_verb
+    </ActionsDropdownItem>
+    <ActionsDropdownItem
+      id="quality-profile-compare"
+      to={
+        Object {
+          "pathname": "/organizations/org/quality_profiles/compare",
+          "query": Object {
+            "language": "js",
+            "name": "name",
+          },
+        }
+      }
+    >
+      compare
+    </ActionsDropdownItem>
+    <ActionsDropdownItem
+      id="quality-profile-copy"
+      onClick={[Function]}
+    >
+      copy
+    </ActionsDropdownItem>
+    <ActionsDropdownItem
+      id="quality-profile-extend"
+      onClick={[Function]}
+    >
+      extend
+    </ActionsDropdownItem>
+    <ActionsDropdownItem
+      id="quality-profile-rename"
+      onClick={[Function]}
+    >
+      rename
+    </ActionsDropdownItem>
+    <ActionsDropdownItem
+      id="quality-profile-set-as-default"
+      onClick={[Function]}
+    >
+      set_as_default
+    </ActionsDropdownItem>
+    <ActionsDropdownDivider />
+    <ActionsDropdownItem
+      destructive={true}
+      id="quality-profile-delete"
+      onClick={[Function]}
+    >
+      delete
+    </ActionsDropdownItem>
+  </ActionsDropdown>
+</Fragment>
+`;
+
+exports[`renders with no permissions 1`] = `
+<Fragment>
+  <ActionsDropdown>
+    <ActionsDropdownItem
+      download="key.xml"
+      id="quality-profile-backup"
+      to="/api/qualityprofiles/backup?profileKey=key"
+    >
+      backup_verb
+    </ActionsDropdownItem>
+    <ActionsDropdownItem
+      id="quality-profile-compare"
+      to={
+        Object {
+          "pathname": "/organizations/org/quality_profiles/compare",
+          "query": Object {
+            "language": "js",
+            "name": "name",
+          },
+        }
+      }
+    >
+      compare
+    </ActionsDropdownItem>
+  </ActionsDropdown>
+</Fragment>
+`;
+
+exports[`renders with permission to edit only 1`] = `
+<Fragment>
+  <ActionsDropdown>
+    <ActionsDropdownItem
+      id="quality-profile-activate-more-rules"
+      to={
+        Object {
+          "pathname": "/organizations/org/rules",
+          "query": Object {
+            "activation": "false",
+            "qprofile": "key",
+          },
+        }
+      }
+    >
+      quality_profiles.activate_more_rules
+    </ActionsDropdownItem>
+    <ActionsDropdownItem
+      download="key.xml"
+      id="quality-profile-backup"
+      to="/api/qualityprofiles/backup?profileKey=key"
+    >
+      backup_verb
+    </ActionsDropdownItem>
+    <ActionsDropdownItem
+      id="quality-profile-compare"
+      to={
+        Object {
+          "pathname": "/organizations/org/quality_profiles/compare",
+          "query": Object {
+            "language": "js",
+            "name": "name",
+          },
+        }
+      }
+    >
+      compare
+    </ActionsDropdownItem>
+    <ActionsDropdownItem
+      id="quality-profile-rename"
+      onClick={[Function]}
+    >
+      rename
+    </ActionsDropdownItem>
+  </ActionsDropdown>
+</Fragment>
+`;

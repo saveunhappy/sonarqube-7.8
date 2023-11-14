@@ -1,0 +1,247 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+sonarqube {
+  properties {
+    property 'sonar.projectName', "${projectTitle} :: Application"
+  }
+}
+
+configurations {
+  zip
+  jsw
+  scanner
+  web
+  shutdowner
+  jdbc_mssql {
+    transitive = false
+  }
+  jdbc_mysql {
+    transitive = false
+  }
+  jdbc_postgresql {
+    transitive = false
+  }
+  jdbc_h2 {
+    transitive = false
+  }
+  bundledPlugin {
+    transitive = false
+  }
+}
+
+ext {
+  slangVersion = '1.5.0.315'
+  dotnetVersion = '7.14.0.8411'
+}
+
+dependencies {
+  // please keep list ordered
+
+  compile 'org.elasticsearch.client:transport'
+  compile project(':server:sonar-ce')
+  compile project(':server:sonar-main')
+  compile project(':server:sonar-process')
+  compile project(':server:sonar-server')
+
+  compileOnly 'com.google.code.findbugs:jsr305'
+
+  jsw 'tanukisoft:wrapper:3.2.3'
+  scanner project(path: ':sonar-scanner-engine-shaded', configuration: 'shadow')
+  web project(':server:sonar-vsts')
+  web project(':server:sonar-web')
+  shutdowner project(':sonar-shutdowner')
+
+  jdbc_h2 'com.h2database:h2'
+  jdbc_mssql 'com.microsoft.sqlserver:mssql-jdbc'
+  jdbc_mysql 'mysql:mysql-connector-java'
+  jdbc_postgresql 'org.postgresql:postgresql'
+
+  bundledPlugin 'org.sonarsource.auth.github:sonar-auth-github-plugin:1.5.0.870@jar'
+  bundledPlugin 'org.sonarsource.auth.saml:sonar-auth-saml-plugin:1.1.0.181@jar'
+  bundledPlugin 'org.sonarsource.css:sonar-css-plugin:1.1.0.993@jar'
+  bundledPlugin "org.sonarsource.dotnet:sonar-csharp-plugin:${dotnetVersion}@jar"
+  bundledPlugin "org.sonarsource.dotnet:sonar-vbnet-plugin:${dotnetVersion}@jar"
+  bundledPlugin 'org.sonarsource.flex:sonar-flex-plugin:2.4.0.1222@jar'
+  bundledPlugin 'org.sonarsource.go:sonar-go-plugin:1.1.1.2000@jar'
+  bundledPlugin 'org.sonarsource.html:sonar-html-plugin:3.1.0.1615@jar'
+  bundledPlugin 'org.sonarsource.java:sonar-java-plugin:5.13.0.18197@jar'
+  bundledPlugin 'org.sonarsource.jacoco:sonar-jacoco-plugin:1.0.1.143@jar'
+  bundledPlugin 'org.sonarsource.javascript:sonar-javascript-plugin:5.2.1.7778@jar'
+  bundledPlugin 'org.sonarsource.ldap:sonar-ldap-plugin:2.2.0.608@jar'
+  bundledPlugin 'org.sonarsource.php:sonar-php-plugin:3.1.1.4762@jar'
+  bundledPlugin 'org.sonarsource.python:sonar-python-plugin:1.14.0.3086@jar'
+  bundledPlugin "org.sonarsource.slang:sonar-kotlin-plugin:${slangVersion}@jar"
+  bundledPlugin "org.sonarsource.slang:sonar-ruby-plugin:${slangVersion}@jar"
+  bundledPlugin 'org.sonarsource.scm.git:sonar-scm-git-plugin:1.8.0.1574@jar'
+  bundledPlugin 'org.sonarsource.scm.svn:sonar-scm-svn-plugin:1.9.0.1295@jar'
+  bundledPlugin "org.sonarsource.slang:sonar-scala-plugin:${slangVersion}@jar"
+  bundledPlugin 'org.sonarsource.typescript:sonar-typescript-plugin:1.9.0.3766@jar'
+  bundledPlugin 'org.sonarsource.xml:sonar-xml-plugin:2.0.1.2020@jar'
+
+  testCompile 'junit:junit'
+  testCompile 'org.assertj:assertj-core'
+  testCompile 'org.mockito:mockito-core'
+}
+
+jar {
+  manifest {
+    attributes(
+      'Class-Path': configurations.compile.resolvedConfiguration.files.collect { "common/${it.getName()}" }.join(' '),
+      'Main-Class': 'org.sonar.application.App'
+    )
+  }
+}
+
+task zip(type: Zip, dependsOn: [configurations.compile]) {
+  duplicatesStrategy DuplicatesStrategy.EXCLUDE
+  def archiveDir = "sonarqube-$version"
+
+  into("${archiveDir}/") {
+    from file('src/main/assembly')
+      exclude 'conf/sonar.properties'
+      exclude 'elasticsearch-patch'
+      // elasticsearch script will be replaced by patched version below
+      exclude 'elasticsearch/bin/elasticsearch'
+      exclude 'elasticsearch/bin/elasticsearch.bat'
+      exclude 'elasticsearch/bin/elasticsearch-env.bat'
+      exclude 'elasticsearch/bin/elasticsearch-service.bat'
+      exclude 'elasticsearch/bin/elasticsearch-service-*.exe'
+      exclude 'elasticsearch/bin/elasticsearch-certgen*'
+      exclude 'elasticsearch/bin/elasticsearch-certutil*'
+      exclude 'elasticsearch/bin/elasticsearch-cli*'
+      exclude 'elasticsearch/bin/elasticsearch-croneval*'
+      exclude 'elasticsearch/bin/elasticsearch-keystore*'
+      exclude 'elasticsearch/bin/elasticsearch-migrate*'
+      exclude 'elasticsearch/bin/elasticsearch-plugin*'
+      exclude 'elasticsearch/bin/elasticsearch-saml-metadata*'
+      exclude 'elasticsearch/bin/elasticsearch-setup-passwords*'
+      exclude 'elasticsearch/bin/elasticsearch-shard*'
+      exclude 'elasticsearch/bin/elasticsearch-sql-cli*'
+      exclude 'elasticsearch/bin/elasticsearch-syskeygen*'
+      exclude 'elasticsearch/bin/elasticsearch-translog*'
+      exclude 'elasticsearch/bin/elasticsearch-users*'
+      exclude 'elasticsearch/bin/x-pack/**'
+      exclude 'elasticsearch/bin/x-pack*'
+      exclude 'elasticsearch/lib/tools/**'
+      exclude 'elasticsearch/modules/aggs-matrix-stats/**'
+      exclude 'elasticsearch/modules/ingest-common/**'
+      exclude 'elasticsearch/modules/ingest-geoip/**'
+      exclude 'elasticsearch/modules/ingest-user-agent/**'
+      exclude 'elasticsearch/modules/lang-expression/**'
+      exclude 'elasticsearch/modules/lang-groovy/**'
+      exclude 'elasticsearch/modules/lang-mustache/**'
+      exclude 'elasticsearch/modules/rank-eval/**'
+      exclude 'elasticsearch/modules/tribe/**'
+      exclude 'elasticsearch/modules/x-pack-*/**'
+  }
+
+  into("${archiveDir}/conf/") {
+    from file('src/main/assembly/conf/sonar.properties')
+      filter(ReplaceTokens, tokens: [
+              'searchDefaultHeapSize': '512MB',
+              'searchJavaOpts'       : '-Xms512m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError',
+              'ceDefaultHeapSize'    : '512MB',
+              'ceJavaOpts'           : '-Xmx512m -Xms128m -XX:+HeapDumpOnOutOfMemoryError',
+              'webDefaultHeapSize'   : '512MB',
+              'webJavaOpts'          : '-Xmx512m -Xms128m -XX:+HeapDumpOnOutOfMemoryError'
+      ])
+  }
+    
+  
+  into("${archiveDir}/elasticsearch/") {
+    from file('src/main/assembly/elasticsearch-patch')
+      include 'bin/elasticsearch'
+  }
+  // Create the empty dir (plugins) required by elasticsearch
+  into("${archiveDir}/elasticsearch/") {
+    from "$buildDir/elasticsearch"
+  }
+  into("${archiveDir}/lib/") {
+    from jar
+  }
+  into("${archiveDir}/extensions/plugins/") {
+    from configurations.bundledPlugin
+  }
+  into("${archiveDir}/lib/jsw/") {
+    from configurations.jsw
+  }
+  into("${archiveDir}/lib/scanner/") {
+    from configurations.scanner
+  }
+  into("${archiveDir}/lib/common/") {
+    from configurations.compile
+  }
+  into("${archiveDir}/web/") {
+    duplicatesStrategy DuplicatesStrategy.FAIL
+    // FIXME use configurations.web with correct artifacts
+    from(tasks.getByPath(':server:sonar-web:yarn_run').outputs) { a ->
+      if (official) {
+         project(':private:branding').fileTree('src').visit { b ->
+           if (!b.isDirectory) {
+             a.exclude b.relativePath.toString()
+           }
+         }
+      }
+    }
+    from tasks.getByPath(':server:sonar-vsts:yarn_run').outputs
+    if (official) {
+      from project(':private:branding').file('src')
+    }
+  }
+  into("${archiveDir}/lib/jdbc/mssql/") {
+    from configurations.jdbc_mssql
+  }
+  into("${archiveDir}/lib/jdbc/mysql/") {
+    from configurations.jdbc_mysql
+  }
+  into("${archiveDir}/lib/jdbc/postgresql/") {
+    from configurations.jdbc_postgresql
+  }
+  into("${archiveDir}/lib/jdbc/h2/") {
+    from configurations.jdbc_h2
+  }
+  into("${archiveDir}/lib/") {
+    from configurations.shutdowner
+  }
+}
+// Create the empty dir required by elasticsearch
+zip.doFirst {
+  new File(buildDir, 'elasticsearch/plugins').mkdirs()
+}
+// Check the size of the archive
+zip.doLast {
+  def minLength = 198000000
+  def maxLength = 206000000
+  def length = archiveFile.get().asFile.length()
+  if (length < minLength)
+    throw new GradleException("$archiveName size ($length) too small. Min is $minLength")
+  if (length > maxLength)
+    throw new GradleException("$distsDir/$archiveName size ($length) too large. Max is $maxLength")
+}
+assemble.dependsOn zip
+
+// the script start.sh unpacks OSS distribution into $buildDir/distributions/sonarqube-oss.
+// This directory should be deleted when the zip is changed.
+task cleanLocalUnzippedDir(dependsOn: zip) {
+  def unzippedDir = file("$buildDir/distributions/sonarqube-$version")
+  inputs.files(file("$buildDir/distributions/sonar-application-${version}.zip"))
+  outputs.upToDateWhen { true }
+
+  doLast {
+    println("delete directory ${unzippedDir}")
+    project.delete(unzippedDir)
+  }
+}
+assemble.dependsOn cleanLocalUnzippedDir
+
+artifacts { zip zip }
+
+artifactoryPublish.skip = false
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      artifact zip
+    }
+  }
+}

@@ -1,0 +1,87 @@
+sonarqube {
+  properties {
+    property 'sonar.projectName', "${projectTitle} :: Database Core"
+  }
+}
+
+dependencies {
+  // please keep the list grouped by configuration and ordered by name
+
+  compile 'ch.qos.logback:logback-classic'
+  compile 'ch.qos.logback:logback-core'
+  compile 'commons-codec:commons-codec'
+  compile 'org.apache.commons:commons-dbcp2'
+  compile 'commons-dbutils:commons-dbutils'
+  compile 'net.jpountz.lz4:lz4'
+  compile 'org.apache.commons:commons-csv'
+  compile 'org.mybatis:mybatis'
+  compile 'org.slf4j:slf4j-api'
+  compile project(':server:sonar-process')
+  compile project(':sonar-core')
+  compile project(':sonar-scanner-protocol')
+  compile project(path: ':sonar-plugin-api', configuration: 'shadow')
+
+  compileOnly 'com.google.code.findbugs:jsr305'
+
+  testCompile 'com.google.code.findbugs:jsr305'
+  testCompile 'com.microsoft.sqlserver:mssql-jdbc'
+  testCompile 'com.oracle.jdbc:ojdbc8'
+  testCompile 'com.tngtech.java:junit-dataprovider'
+  testCompile 'junit:junit'
+  testCompile 'mysql:mysql-connector-java'
+  testCompile 'org.assertj:assertj-core'
+  testCompile 'org.dbunit:dbunit'
+  testCompile 'org.mockito:mockito-core'
+  testCompile 'org.postgresql:postgresql'
+  testCompile 'org.sonarsource.orchestrator:sonar-orchestrator:3.25.0.2094'
+  testCompile project(':sonar-testing-harness')
+
+  testRuntime 'com.h2database:h2'
+  testRuntime 'com.microsoft.sqlserver:mssql-jdbc'
+  testRuntime 'com.oracle.jdbc:ojdbc8'
+  testRuntime 'mysql:mysql-connector-java'
+  testRuntime 'org.postgresql:postgresql'
+}
+
+task createDB(type:JavaExec) {
+  main = 'org.sonar.db.CreateDb'
+  classpath = sourceSets.test.runtimeClasspath
+  systemProperty 'orchestrator.configUrl', System.getProperty('orchestrator.configUrl')
+  if (!project.version.endsWith("-SNAPSHOT")) {
+    systemProperty 'sonar.runtimeVersion', project.version
+  }
+}
+
+test {
+  if (System.hasProperty('orchestrator.configUrl'))
+    systemProperty 'orchestrator.configUrl', System.getProperty('orchestrator.configUrl')
+}
+
+task testJar(type: Jar) {
+  classifier = 'tests'
+  from sourceSets.test.output
+}
+
+configurations {
+  tests
+}
+
+artifacts {
+   tests testJar
+}
+
+artifactoryPublish.skip = false
+
+// Used by core plugins
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from components.java
+      if (release) {
+        artifact sourcesJar
+        artifact javadocJar
+        artifact testJar
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders 1`] = `
+<Link
+  onlyActiveOnIndex={false}
+  style={Object {}}
+  to={
+    Object {
+      "pathname": "/component_measures",
+      "query": Object {
+        "id": "foo",
+        "metric": "security_rating",
+      },
+    }
+  }
+>
+  <MeasuresIcon
+    className="little-spacer-right"
+    size={14}
+  />
+  <span>
+    portfolio.measures_link
+  </span>
+</Link>
+`;

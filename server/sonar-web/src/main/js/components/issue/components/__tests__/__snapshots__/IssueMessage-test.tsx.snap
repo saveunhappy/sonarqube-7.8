@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render with the message and a link to open the rule 1`] = `
+<div
+  className="issue-message"
+>
+  <span
+    className="little-spacer-right"
+  >
+    Reduce the number of conditional operators (4) used in the expression
+  </span>
+  <Button
+    aria-label="issue.rule_details"
+    className="button button-grey button-tiny spacer-right text-top"
+    onClick={[Function]}
+  >
+    issue.see_rule
+  </Button>
+</div>
+`;

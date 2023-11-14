@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should display the edition 1`] = `
+<div
+  className="boxed-group boxed-group-inner marketplace-edition"
+>
+  <LazyLoader />
+  <div
+    className="marketplace-edition-action spacer-top"
+  >
+    <a
+      href="more_url?ncloc=1000&serverId=serverId&sourceEdition=community"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      marketplace.ask_for_information
+    </a>
+  </div>
+</div>
+`;

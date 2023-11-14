@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders 1`] = `
+<div
+  className="projects-list"
+>
+  <WindowScroller
+    onResize={[Function]}
+    onScroll={[Function]}
+    scrollElement={[Window]}
+    scrollingResetTimeInterval={150}
+    serverHeight={0}
+    serverWidth={0}
+  >
+    <Component />
+  </WindowScroller>
+</div>
+`;
+
+exports[`renders different types of "no projects" 1`] = `
+<div
+  className="projects-list"
+>
+  <ContextConsumer>
+    <Component />
+  </ContextConsumer>
+</div>
+`;
+
+exports[`renders different types of "no projects" 2`] = `
+<div
+  className="projects-list"
+>
+  <EmptySearch />
+</div>
+`;
+
+exports[`renders different types of "no projects" 3`] = `
+<div
+  className="projects-list"
+>
+  <ContextConsumer>
+    <Component />
+  </ContextConsumer>
+</div>
+`;

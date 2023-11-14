@@ -1,0 +1,102 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render correctly 1`] = `
+<section
+  className="oauth-providers"
+>
+  <ul>
+    <OAuthProvider
+      format={[Function]}
+      identityProvider={
+        Object {
+          "backgroundColor": "#000",
+          "iconPath": "/some/path",
+          "key": "foo",
+          "name": "Foo",
+        }
+      }
+      key="foo"
+      returnTo=""
+    />
+    <OAuthProvider
+      format={[Function]}
+      identityProvider={
+        Object {
+          "backgroundColor": "#00F",
+          "helpMessage": "Help message!",
+          "iconPath": "/icon/path",
+          "key": "bar",
+          "name": "Bar",
+        }
+      }
+      key="bar"
+      returnTo=""
+    />
+  </ul>
+</section>
+`;
+
+exports[`should render correctly 2`] = `
+<li>
+  <IdentityProviderLink
+    identityProvider={
+      Object {
+        "backgroundColor": "#000",
+        "iconPath": "/some/path",
+        "key": "foo",
+        "name": "Foo",
+      }
+    }
+    url="/sessions/init/foo?return_to="
+  >
+    <span>
+      login.login_with_x.Foo
+    </span>
+  </IdentityProviderLink>
+</li>
+`;
+
+exports[`should render correctly 3`] = `
+<li>
+  <IdentityProviderLink
+    identityProvider={
+      Object {
+        "backgroundColor": "#00F",
+        "helpMessage": "Help message!",
+        "iconPath": "/icon/path",
+        "key": "bar",
+        "name": "Bar",
+      }
+    }
+    url="/sessions/init/bar?return_to="
+  >
+    <span>
+      login.login_with_x.Bar
+    </span>
+  </IdentityProviderLink>
+  <HelpTooltip
+    className="oauth-providers-help"
+    overlay="Help message!"
+  />
+</li>
+`;
+
+exports[`should use the custom label formatter 1`] = `
+<li>
+  <IdentityProviderLink
+    identityProvider={
+      Object {
+        "backgroundColor": "#000",
+        "iconPath": "/some/path",
+        "key": "foo",
+        "name": "Foo",
+      }
+    }
+    url="/sessions/init/foo?return_to="
+  >
+    <span>
+      custom_format.Foo
+    </span>
+  </IdentityProviderLink>
+</li>
+`;

@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render with a caret on the right if update is allowed 1`] = `
+<span
+  className="tags-list"
+  title="foo, bar"
+>
+  <TagsIcon
+    className="text-middle"
+  />
+  <span
+    className="text-ellipsis text-middle"
+  >
+    foo, bar
+  </span>
+  <DropdownIcon
+    className="text-middle"
+  />
+</span>
+`;
+
+exports[`should render with a list of tag 1`] = `
+<span
+  className="tags-list"
+  title="foo, bar"
+>
+  <TagsIcon
+    className="text-middle"
+  />
+  <span
+    className="text-ellipsis text-middle"
+  >
+    foo, bar
+  </span>
+</span>
+`;

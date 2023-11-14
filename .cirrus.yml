@@ -1,0 +1,501 @@
+# content of service-account-credentials.json, used to access to Google Cloud Platform
+gcp_credentials: ENCRYPTED[534d4b89444f3e4e3ba299769a98010609e71992355c132fd6e448f1d8fcb039184224c8b4cdf7933b0aec16d6a8896d]
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-XX:+PrintFlagsFinal -XshowSettings:vm -XX:+HeapDumpOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -Djava.security.egd=file:/dev/./urandom -Dfile.encoding=UTF8 -Duser.language=en -Duser.country=US"
+  # to be replaced by other credentials
+  ARTIFACTORY_PRIVATE_USERNAME: ENCRYPTED[c0baa3376daa1e08d602435081d07653799cf34ab09ca92e575f3dc4176bc6cf2ebf87120e83f3aa6804f072013e8e2b]
+  ARTIFACTORY_PRIVATE_PASSWORD: ENCRYPTED[f13d32d218c3da8008114d2c8857b2956047fbdab2163bbf186b8b89f789f0efa7504f499749a59ad5988c14e5360353]
+  ARTIFACTORY_DEPLOY_USERNAME: public-qa-deployer
+  ARTIFACTORY_DEPLOY_PASSWORD: ENCRYPTED[9362d735843b21b375b6e19d91e0de5216e053e229e39e2ce33a0c866306e6e3f9b08db8a0e126ca5e986fea97e975fd]
+  ARTIFACTORY_DEPLOY_USERNAME_PRIVATE: private-qa-deployer
+  ARTIFACTORY_DEPLOY_PASSWORD_PRIVATE: ENCRYPTED[61769719e9b775afe103dbee22141eeaa0116b3332eafb993be2a5919ff7bf017cdc519afed07dc6cac8ebbc0846f191]
+  ARTIFACTORY_API_KEY: ENCRYPTED[d52910db749f2678f43084b18c849486d68fbc02c2f5489c7ee1085c395de9dc7575313a8b348bb5361a693dd782e07e]
+  # download licenses for testing commercial editions
+  GITHUB_TOKEN: ENCRYPTED[bd3d5f7fe5901d9d9f2564caebb52af285262177294eae67ba5f1a3a1df1316449ce6e09c5e1b68eeff37e024e2d167a]
+  # use a permanent GitHub access token to perform a clone (by default CirrusCI uses a temporary one)
+  CIRRUS_REPO_CLONE_TOKEN: ENCRYPTED[f20fee6519296187a473964e60afb08a1bbdc889a624fad0297b41a21d8697f8d2da4d2d245194ade630dcf46b4b581e]
+  # notifications to burgr
+  BURGR_URL: ENCRYPTED[06b8fcc9aaa4b495043aa08bc4450b89588902ad9a60cc8525f53d14810aff84558812e4b7eb01131dd64f33916ac941]
+  BURGR_USERNAME: ENCRYPTED[cf7bfb936025fb763013bbfef0ab5723c0d9b53f135d79af36f9defa933f4b5fc72842bd83a97ce9b614503c1b77e6da]
+  BURGR_PASSWORD: ENCRYPTED[bc554fc6a06c9f14cc9924cefad0a69e962a905b6d1609fc9357d458b45fc52ac74c960ad9c7382a0691433fa9dcd483]
+  # ops-jenkins credentials required to trigger docs deppoyment
+  OPS_JENKINS_URL: ENCRYPTED[00ea2b88c762e374c02a3d29a306cc1cf3ceb4b3d807bda2a601486e0d483fd67a556ef295830231390f45e7d512b54d]
+  OPS_JENKINS_USERNAME: ENCRYPTED[c778b1483a7ca000dc760ef731c2fbe1dc05a9af38f2a85206cfbcdf649e50715ca447ac291485d513aa9120b0c9abad]
+  OPS_JENKINS_PASSWORD: ENCRYPTED[a035a2826c3bc971288284a59bd00dda193d8a81e7809e08bf4ec59b68894c16f30095a567e65755240bb7f919c2e0bf]
+  # DOCS_JOB_TOKEN: token required to launch the deployment of documentation job on ops-jenkins (see private/cirrus/cirrus-trigger-deploy-docs.sh)
+  DOCS_JOB_TOKEN: ENCRYPTED[7771f76a0fc0038f9929c32d98588963c8dcda6148ba054f57358bc17faa109ac638134c89067f3bacc8933d2fa2c541]
+  # analysis on next.sonarqube.com
+  SONARQUBE_NEXT_TOKEN: ENCRYPTED[e3d98fa0ecceb015e9803d47f78c3040f5a710d678a631107635d69f650d4e53ecaf2e2334cc1fe0c47037ec915dcda0]
+
+auto_cancellation: $CIRRUS_BRANCH != 'master' && $CIRRUS_BRANCH !=~ 'branch.*'
+
+build_task:
+  only_if: $CIRRUS_BRANCH !=~ "dogfood/.*" && $CIRRUS_BRANCH != "public_master"
+  timeout_in: 90m
+  gke_container:
+    dockerfile: private/docker/Dockerfile-build
+    builder_image_project: ci-cd-215716
+    builder_image_name: docker-builder-v1
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 3
+    memory: 10Gb
+  gradle_cache:
+    folder: ~/.gradle/caches
+  env:
+    # No need to clone the full history.
+    # Depth of 1 is not enough because it would fail the build in case of consecutive pushes
+    # (example of error: "Hard resetting to c968ecaf7a1942dacecd78480b3751ac74d53c33...Failed to force reset to c968ecaf7a1942dacecd78480b3751ac74d53c33: object not found!")
+    CIRRUS_CLONE_DEPTH: 50
+  script:
+    - ./private/cirrus/cirrus-build.sh
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+
+deploy_docs_task:
+  depends_on: build
+  only_if: $CIRRUS_BRANCH == 'dogfood-on-next'
+  gke_container:
+    dockerfile: private/docker/Dockerfile-build
+    builder_image_project: ci-cd-215716
+    builder_image_name: docker-builder-v1
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 1
+    memory: 1Gb
+  env:
+    # No need to clone the full history.
+    # Depth of 1 is not enough because it would fail the build in case of consecutive pushes
+    # (example of error: "Hard resetting to c968ecaf7a1942dacecd78480b3751ac74d53c33...Failed to force reset to c968ecaf7a1942dacecd78480b3751ac74d53c33: object not found!")
+    CIRRUS_CLONE_DEPTH: 50
+  script:
+    - ./private/cirrus/cirrus-trigger-deploy-docs.sh
+
+validate_task:
+  depends_on: build
+  only_if: $CIRRUS_BRANCH !=~ "dogfood/.*" && $CIRRUS_BRANCH != "public_master" && $CIRRUS_TAG != "nightly-build"
+  timeout_in: 90m
+  gke_container:
+    dockerfile: private/docker/Dockerfile-build
+    builder_image_project: ci-cd-215716
+    builder_image_name: docker-builder-v1
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 2.4
+    memory: 10Gb
+    additional_containers:
+      - name: postgres
+        image: postgres:10.6
+        port: 5432
+        cpu: 1
+        memory: 1Gb
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+  gradle_cache:
+    folder: ~/.gradle/caches
+  script:
+    - ./private/cirrus/cirrus-validate.sh postgres106
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+    junit_artifacts:
+      path: "**/test-results/**/*.xml"
+      format: junit
+
+qa_task:
+  depends_on: build
+  only_if: $CIRRUS_BRANCH !=~ "dogfood/.*" && $CIRRUS_BRANCH != "public_master" && $CIRRUS_TAG != "nightly-build"
+  gke_container:
+    dockerfile: private/docker/Dockerfile-build
+    builder_image_project: ci-cd-215716
+    builder_image_name: docker-builder-v1
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 2.4
+    memory: 10Gb
+    additional_containers:
+      - name: postgres
+        image: postgres:10.6
+        port: 5432
+        cpu: 1
+        memory: 1Gb
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+  env:
+    # No need to clone the full history.
+    # Depth of 1 is not enough because it would fail the build in case of consecutive pushes
+    # (example of error: "Hard resetting to c968ecaf7a1942dacecd78480b3751ac74d53c33...Failed to force reset to c968ecaf7a1942dacecd78480b3751ac74d53c33: object not found!")
+    CIRRUS_CLONE_DEPTH: 50
+    matrix:
+      QA_CATEGORY: Cat1
+      QA_CATEGORY: Cat2
+      QA_CATEGORY: Cat3
+      QA_CATEGORY: Cat4
+      QA_CATEGORY: Cat5
+      QA_CATEGORY: Cat6
+      QA_CATEGORY: Cat7
+      QA_CATEGORY: Gov
+      QA_CATEGORY: Billing
+      QA_CATEGORY: License
+      QA_CATEGORY: Branch
+      QA_CATEGORY: Upgrade
+      QA_CATEGORY: HA
+  gradle_cache:
+    folder: ~/.gradle/caches
+  script:
+    - ./private/cirrus/cirrus-qa.sh postgres106
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+    screenshots_artifacts:
+      path: "**/build/screenshots/**/*"
+    junit_artifacts:
+      path: "**/test-results/**/*.xml"
+      format: junit
+
+promote_task:
+  depends_on:
+    - build
+    - validate
+    - qa
+  only_if: $CIRRUS_BRANCH !=~ "dogfood/.*" && $CIRRUS_BRANCH != "public_master" && $CIRRUS_TAG != "nightly-build"
+  gke_container:
+    dockerfile: private/docker/Dockerfile-build
+    builder_image_project: ci-cd-215716
+    builder_image_name: docker-builder-v1
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 1
+    memory: 1Gb
+  env:
+    # No need to clone the full history.
+    # Depth of 1 is not enough because it would fail the build in case of consecutive pushes
+    # (example of error: "Hard resetting to c968ecaf7a1942dacecd78480b3751ac74d53c33...Failed to force reset to c968ecaf7a1942dacecd78480b3751ac74d53c33: object not found!")
+    CIRRUS_CLONE_DEPTH: 50
+  script:
+    - ./private/cirrus/cirrus-promote.sh
+
+test_sql_mysql57_task:
+  depends_on: build
+  # Comment the following line and commit with message "DO NOT MERGE" in order to run
+  # this task on your branch
+  only_if: $CIRRUS_TAG == "nightly-build"
+  gke_container:
+    image: gradle:5.4.1-jdk11
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 1
+    memory: 10Gb
+    additional_containers:
+      - name: mysql
+        image: mysql:5.7 # see https://github.com/mysql/mysql-docker
+        port: 3306
+        cpu: 1
+        memory: 1Gb
+        env:
+          MYSQL_ROOT_PASSWORD: sonarsource
+          MYSQL_DATABASE: sonar
+          MYSQL_USER: sonar
+          MYSQL_PASSWORD: sonar
+  gradle_cache:
+    folder: ~/.gradle/caches
+  script:
+    - ./private/cirrus/cirrus-db-unit-test.sh mysql57
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+    junit_artifacts:
+      path: "**/test-results/**/*.xml"
+      format: junit
+
+
+test_sql_mssql2017_task:
+  depends_on: build
+  # Comment the following line and commit with message "DO NOT MERGE" in order to run
+  # this task on your branch
+  only_if: $CIRRUS_TAG == "nightly-build"
+  gke_container:
+    image: gradle:5.4.1-jdk11
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 1
+    memory: 5Gb
+    additional_containers:
+      - name: mssql
+        image: mcr.microsoft.com/mssql/server:2017-CU12-ubuntu
+        port: 1433
+        cpu: 2
+        memory: 5Gb
+        env:
+          MSSQL_PID: Developer # this is the default edition
+          ACCEPT_EULA: Y
+          SA_PASSWORD: sonarqube!1
+  gradle_cache:
+    folder: ~/.gradle/caches
+  script:
+    - ./private/cirrus/cirrus-db-unit-test.sh mssql2017
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+    junit_artifacts:
+      path: "**/test-results/**/*.xml"
+      format: junit
+
+test_sql_mssql2019_task:
+  depends_on: build
+  # Comment the following line and commit with message "DO NOT MERGE" in order to run
+  # this task on your branch
+  only_if: $CIRRUS_TAG == "nightly-build"
+  gke_container:
+    image: gradle:5.4.1-jdk11
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 1
+    memory: 5Gb
+    additional_containers:
+      - name: mssql
+        image: mcr.microsoft.com/mssql/server:2019-CTP2.2-ubuntu
+        port: 1433
+        cpu: 2
+        memory: 5Gb
+        env:
+          MSSQL_PID: Developer # this is the default edition
+          ACCEPT_EULA: Y
+          SA_PASSWORD: sonarqube!1
+  gradle_cache:
+    folder: ~/.gradle/caches
+  script:
+    - ./private/cirrus/cirrus-db-unit-test.sh mssql2019
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+    junit_artifacts:
+      path: "**/test-results/**/*.xml"
+      format: junit
+
+
+# this is the oldest compatible version of PostgreSQL
+test_sql_postgres93_task:
+  depends_on: build
+  # Comment the following line and commit with message "DO NOT MERGE" in order to run
+  # this task on your branch
+  only_if: $CIRRUS_TAG == "nightly-build"
+  gke_container:
+    image: gradle:5.4.1-jdk11
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 1
+    memory: 5Gb
+    additional_containers:
+      - name: postgres
+        image: postgres:9.3
+        port: 5432
+        cpu: 1
+        memory: 1Gb
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+  gradle_cache:
+    folder: ~/.gradle/caches
+  script:
+    - ./private/cirrus/cirrus-db-unit-test.sh postgres93
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+    junit_artifacts:
+      path: "**/test-results/**/*.xml"
+      format: junit
+
+test_sql_oracle12_task:
+  depends_on: build
+  # Comment the following line and commit with message "DO NOT MERGE" in order to run
+  # this task on your branch
+  only_if: $CIRRUS_TAG == "nightly-build"
+  gke_container:
+    image: gradle:5.4.1-jdk11
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 1
+    memory: 5Gb
+    additional_containers:
+      - name: oracle
+        image: gcr.io/ci-cd-215716/oracle12:0.0.1 # see https://github.com/SonarSource/vms/blob/master/docker/README.md#oracle-12c to build it
+        port: 1521
+        cpu: 2
+        memory: 5Gb
+        env:
+          ORACLE_PWD: sonarqube
+  gradle_cache:
+    folder: ~/.gradle/caches
+  script:
+    - ./private/cirrus/cirrus-db-unit-test.sh oracle12
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+    junit_artifacts:
+      path: "**/test-results/**/*.xml"
+      format: junit
+
+
+test_upgrade_mysql57_task:
+  depends_on: build
+  # Comment the following line and commit with message "DO NOT MERGE" in order to run
+  # this task on your branch
+  only_if: $CIRRUS_TAG == "nightly-build"
+  gke_container:
+    dockerfile: private/docker/Dockerfile-build
+    builder_image_project: ci-cd-215716
+    builder_image_name: docker-builder-v1
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 1.5
+    memory: 6Gb
+    additional_containers:
+      - name: mysql
+        image: mysql:5.7 # see https://github.com/mysql/mysql-docker
+        port: 3306
+        cpu: 1
+        memory: 1Gb
+        env:
+          MYSQL_ROOT_PASSWORD: sonarsource
+          MYSQL_DATABASE: sonar
+          MYSQL_USER: sonar
+          MYSQL_PASSWORD: sonar
+  env:
+    # No need to clone the full history.
+    # Depth of 1 is not enough because it would fail the build in case of consecutive pushes
+    # (example of error: "Hard resetting to c968ecaf7a1942dacecd78480b3751ac74d53c33...Failed to force reset to c968ecaf7a1942dacecd78480b3751ac74d53c33: object not found!")
+    CIRRUS_CLONE_DEPTH: 50
+    matrix:
+      QA_CATEGORY: Upgrade
+  gradle_cache:
+    folder: ~/.gradle/caches
+  script:
+    - ./private/cirrus/cirrus-qa.sh mysql57
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+    junit_artifacts:
+      path: "**/test-results/**/*.xml"
+      format: junit
+
+
+test_upgrade_mssql2017_task:
+  depends_on: build
+  # Comment the following line and commit with message "DO NOT MERGE" in order to run
+  # this task on your branch
+  only_if: $CIRRUS_TAG == "nightly-build"
+  gke_container:
+    dockerfile: private/docker/Dockerfile-build
+    builder_image_project: ci-cd-215716
+    builder_image_name: docker-builder-v1
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 1.5
+    memory: 6Gb
+    additional_containers:
+      - name: mssql
+        image: mcr.microsoft.com/mssql/server:2017-CU12-ubuntu
+        port: 1433
+        cpu: 2
+        memory: 5Gb
+        env:
+          MSSQL_PID: Developer # this is the default edition
+          ACCEPT_EULA: Y
+          SA_PASSWORD: sonarqube!1
+  env:
+    # No need to clone the full history.
+    # Depth of 1 is not enough because it would fail the build in case of consecutive pushes
+    # (example of error: "Hard resetting to c968ecaf7a1942dacecd78480b3751ac74d53c33...Failed to force reset to c968ecaf7a1942dacecd78480b3751ac74d53c33: object not found!")
+    CIRRUS_CLONE_DEPTH: 50
+    matrix:
+      QA_CATEGORY: Upgrade
+  gradle_cache:
+    folder: ~/.gradle/caches
+  script:
+    - ./private/cirrus/cirrus-qa.sh mssql2017
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+    junit_artifacts:
+      path: "**/test-results/**/*.xml"
+      format: junit
+
+
+test_upgrade_oracle12_task:
+  depends_on: build
+  # Comment the following line and commit with message "DO NOT MERGE" in order to run
+  # this task on your branch
+  only_if: $CIRRUS_TAG == "nightly-build"
+  gke_container:
+    dockerfile: private/docker/Dockerfile-build
+    builder_image_project: ci-cd-215716
+    builder_image_name: docker-builder-v1
+    cluster_name: cirrus-euw3a-cluster
+    zone: europe-west3-a
+    namespace: default
+    cpu: 1.5
+    memory: 6Gb
+    additional_containers:
+      - name: oracle
+        image: gcr.io/ci-cd-215716/oracle12:0.0.1 # see https://github.com/SonarSource/vms/blob/master/docker/README.md#oracle-12c to build it
+        port: 1521
+        cpu: 2
+        memory: 5Gb
+        env:
+          ORACLE_PWD: sonarqube
+  env:
+    # No need to clone the full history.
+    # Depth of 1 is not enough because it would fail the build in case of consecutive pushes
+    # (example of error: "Hard resetting to c968ecaf7a1942dacecd78480b3751ac74d53c33...Failed to force reset to c968ecaf7a1942dacecd78480b3751ac74d53c33: object not found!")
+    CIRRUS_CLONE_DEPTH: 50
+    matrix:
+      QA_CATEGORY: Upgrade
+  gradle_cache:
+    folder: ~/.gradle/caches
+  script:
+    - ./private/cirrus/cirrus-qa.sh oracle12
+  cleanup_before_cache_script:
+    - ./private/cirrus/cleanup-gradle-cache.sh
+  on_failure:
+    reports_artifacts:
+      path: "**/build/reports/**/*"
+    junit_artifacts:
+      path: "**/test-results/**/*.xml"
+      format: junit
